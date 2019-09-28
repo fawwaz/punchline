@@ -20,6 +20,8 @@ class ChatOne extends Component {
 
   // init state with the prefetched messages
   state = {
+    nickName: "",
+    roomCode: "",
     field: "",
     newMessage: 0,
     messages: this.props.messages,
@@ -63,8 +65,12 @@ class ChatOne extends Component {
     this.setState(prevState => ({ newMessage: prevState.newMessage + 1 }));
   };
 
-  handleChange = event => {
-    this.setState({ field: event.target.value });
+  handleChangeNickName = event => {
+    this.setState({ nickName: event.target.value });
+  };
+
+  handleChangeRoomCode = event => {
+    this.setState({ roomCode: event.target.value });
   };
 
   // send messages to server and add them to the state
@@ -85,10 +91,19 @@ class ChatOne extends Component {
     //   field: '',
     //   messages: state.messages.concat(message)
     // }))
+
+    // check udah registered belum dan nama-nya duplikat gak ?
+
+    const joinPayload = {
+      roomCode,
+      nickName
+    };
+
+    this.props.socket.emit("join", joinPayload);
     Router.push({
       pathname: "/controller",
       query: {
-        code: this.state.field
+        roomCode: this.state.field
       }
     });
   };
@@ -128,10 +143,16 @@ class ChatOne extends Component {
         </Link>
         <form onSubmit={e => this.handleSubmit(e)}>
           <input
-            onChange={this.handleChange}
+            onChange={this.handleChangeNickName}
             type="text"
-            placeholder="Enter Room Code!"
-            value={this.state.field}
+            placeholder="Enter your nick name"
+            value={this.state.nickName}
+          />
+          <input
+            onChange={this.handleChangeRoomCode}
+            type="text"
+            placeholder="Enter 4 digit Room Code!"
+            value={this.state.roomCode}
           />
           <button>Join Lobby</button>
         </form>

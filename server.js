@@ -1,4 +1,5 @@
 const app = require("express")();
+const bodyParser = require("body-parser");
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const next = require("next");
@@ -8,14 +9,11 @@ const dev = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
 const nextHandler = nextApp.getRequestHandler();
 
+const { configureSocket } = require("./utils/sockets");
+const { createDbConnection } = require("./utils/database");
+
 const firebaseAdmin = require("firebase-admin");
 const serviceAccountJson = JSON.parse(process.env.SERVICE_ACCOUNT_JSON);
-
-// fake DB
-const messages = {
-  chat1: [],
-  chat2: []
-};
 
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccountJson),
@@ -23,35 +21,29 @@ firebaseAdmin.initializeApp({
 });
 
 const firestore = firebaseAdmin.firestore();
-const testCollection = firestore.collection("test");
 
-testCollection
-  .get()
-  .then(snapshot => {
-    snapshot.forEach(doc => {
-      messages.chat1.push(doc.data());
-      console.log(doc.id, "=>", doc.data());
-    });
-  })
-  .catch(err => {
-    console.log("Error getting documents", err);
-  });
+const db = createDbConnection(firestore);
 
-// socket.io server
 io.on("connection", socket => {
-  socket.on("message.chat1", data => {
-    messages["chat1"].push(data);
-    socket.broadcast.emit("message.chat1", data);
-  });
-  socket.on("message.chat2", data => {
-    messages["chat2"].push(data);
-    socket.broadcast.emit("message.chat2", data);
-  });
+  configureSocket(socket, db);
 });
 
 nextApp.prepare().then(() => {
+  app.use(bodyParser.json());
+
   app.get("/messages/:chat", (req, res) => {
     res.json(messages[req.params.chat]);
+  });
+
+  app.post("/createRoom", (req, res) => {
+    console.log(req.body);
+    res.json({ echo: JSON.stringify(req.body) });
+  });
+
+  app.get("/check/:roomCode/:nickName", (req, res) => {
+    const { params } = req;
+    const { roomCode, nickName } = params;
+    console.log(roomCode, nickName);
   });
 
   app.get("*", (req, res) => {
