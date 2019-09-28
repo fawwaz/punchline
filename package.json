@@ -1,18 +1,36 @@
 {
   "name": "with-socket.io",
   "version": "1.0.0",
+  "engines": {
+    "node": "8.16.1"
+  },
   "dependencies": {
+    "dotenv": "^8.1.0",
     "express": "^4.15.2",
+    "firebase-admin": "^8.6.0",
     "isomorphic-unfetch": "^2.0.0",
+    "lodash": "^4.17.15",
     "next": "latest",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged",
+      "post-commit": "git push heroku master"
+    }
+  },
   "scripts": {
     "dev": "node server.js",
     "build": "next build",
+    "heroku-postbuild": "npm run build",
     "start": "NODE_ENV=production node server.js"
+  },
+  "devDependencies": {
+    "husky": "^3.0.7",
+    "prettier": "^1.18.2",
+    "pretty-quick": "^1.11.1"
   }
 }

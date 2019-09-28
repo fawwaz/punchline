@@ -5,7 +5,10 @@ import fetch from 'isomorphic-unfetch'
 class ChatOne extends Component {
   // fetch old messages data from the server
   static async getInitialProps ({ req }) {
-    const response = await fetch('http://localhost:3000/messages/chat1')
+    const baseUrl = req ? `${req.protocol}://${req.get('Host')}` : '';
+    // const response = await fetch(`${baseUrl}/messages/chat1`);
+    const { SECRET_TOKEN } = process.env;
+    const response = await fetch(`${process.env.domain}/messages/chat1`);
     const messages = await response.json()
     return { messages }
   }

@@ -5,7 +5,8 @@ import fetch from 'isomorphic-unfetch'
 class ChatTwo extends Component {
   // fetch old messages data from the server
   static async getInitialProps ({ req }) {
-    const response = await fetch('http://localhost:3000/messages/chat2')
+    const baseUrl = req ? `${req.protocol}://${req.get('Host')}` : '';
+    const response = await fetch(`${baseUrl}/messages/chat1`);
     const messages = await response.json()
     return { messages }
   }
