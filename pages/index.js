@@ -1,95 +1,102 @@
-import { Component } from 'react'
-import Link from 'next/link'
-import fetch from 'isomorphic-unfetch'
+import { Component } from "react";
+import Router from "next/router";
+import Link from "next/link";
+import fetch from "isomorphic-unfetch";
 
 class ChatOne extends Component {
   // fetch old messages data from the server
-  static async getInitialProps ({ req }) {
-    const baseUrl = req ? `${req.protocol}://${req.get('Host')}` : '';
+  static async getInitialProps({ req }) {
+    const baseUrl = req ? `${req.protocol}://${req.get("Host")}` : "";
     // const response = await fetch(`${baseUrl}/messages/chat1`);
     const { SECRET_TOKEN } = process.env;
     const response = await fetch(`${process.env.domain}/messages/chat1`);
-    const messages = await response.json()
-    return { messages }
+    const messages = await response.json();
+    return { messages };
   }
 
   static defaultProps = {
     messages: []
-  }
+  };
 
   // init state with the prefetched messages
   state = {
-    field: '',
+    field: "",
     newMessage: 0,
     messages: this.props.messages,
     subscribe: false,
     subscribed: false
-  }
+  };
 
   subscribe = () => {
     if (this.state.subscribe && !this.state.subscribed) {
       // connect to WS server and listen event
-      this.props.socket.on('message.chat1', this.handleMessage)
-      this.props.socket.on('message.chat2', this.handleOtherMessage)
-      this.setState({ subscribed: true })
+      this.props.socket.on("message.chat1", this.handleMessage);
+      this.props.socket.on("message.chat2", this.handleOtherMessage);
+      this.setState({ subscribed: true });
     }
-  }
-  componentDidMount () {
-    this.subscribe()
-  }
-
-  componentDidUpdate () {
-    this.subscribe()
+  };
+  componentDidMount() {
+    this.subscribe();
   }
 
-  static getDerivedStateFromProps (props, state) {
-    if (props.socket && !state.subscribe) return { subscribe: true }
-    return null
+  componentDidUpdate() {
+    this.subscribe();
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.socket && !state.subscribe) return { subscribe: true };
+    return null;
   }
 
   // close socket connection
-  componentWillUnmount () {
-    this.props.socket.off('message.chat1', this.handleMessage)
-    this.props.socket.off('message.chat2', this.handleOtherMessage)
+  componentWillUnmount() {
+    this.props.socket.off("message.chat1", this.handleMessage);
+    this.props.socket.off("message.chat2", this.handleOtherMessage);
   }
 
   // add messages from server to the state
   handleMessage = message => {
-    this.setState(state => ({ messages: state.messages.concat(message) }))
-  }
+    this.setState(state => ({ messages: state.messages.concat(message) }));
+  };
 
   handleOtherMessage = () => {
-    this.setState(prevState => ({ newMessage: prevState.newMessage + 1 }))
-  }
+    this.setState(prevState => ({ newMessage: prevState.newMessage + 1 }));
+  };
 
   handleChange = event => {
-    this.setState({ field: event.target.value })
-  }
+    this.setState({ field: event.target.value });
+  };
 
   // send messages to server and add them to the state
   handleSubmit = event => {
-    event.preventDefault()
+    event.preventDefault();
 
-    // create message object
-    const message = {
-      id: new Date().getTime(),
-      value: this.state.field
-    }
+    // // create message object
+    // const message = {
+    //   id: new Date().getTime(),
+    //   value: this.state.field
+    // }
 
-    // send object to WS server
-    this.props.socket.emit('message.chat1', message)
+    // // send object to WS server
+    // this.props.socket.emit('message.chat1', message)
 
-    // add it to state and clean current input value
-    this.setState(state => ({
-      field: '',
-      messages: state.messages.concat(message)
-    }))
-  }
+    // // add it to state and clean current input value
+    // this.setState(state => ({
+    //   field: '',
+    //   messages: state.messages.concat(message)
+    // }))
+    Router.push({
+      pathname: "/controller",
+      query: {
+        code: this.state.field
+      }
+    });
+  };
 
-  render () {
+  render() {
     return (
       <main>
-        <div>
+        {/* <div>
           <Link href={'/'}>
             <a>{'Chat One'}</a>
           </Link>
@@ -115,10 +122,22 @@ class ChatOne extends Component {
             />
             <button>Send</button>
           </form>
-        </div>
+        </div> */}
+        <Link href={"/lobby"}>
+          <a>Create Lobby</a>
+        </Link>
+        <form onSubmit={e => this.handleSubmit(e)}>
+          <input
+            onChange={this.handleChange}
+            type="text"
+            placeholder="Enter Room Code!"
+            value={this.state.field}
+          />
+          <button>Join Lobby</button>
+        </form>
       </main>
-    )
+    );
   }
 }
 
-export default ChatOne
+export default ChatOne;
