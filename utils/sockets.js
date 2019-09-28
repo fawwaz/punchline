@@ -8,10 +8,9 @@ const configureSocket = (socket, db) => {
     socket.broadcast.emit("message.chat2", data);
   });
 
-  socket.on("join", data => {
-    console.log("TODO: Write mambe to database, broadcast join event");
-    console.log(data);
-    // socket.broadcast.emit("message.chat1", data);
+  socket.on("join", async ({ roomCode }) => {
+    const players = await db.getAllUserInRoom({ roomCode });
+    socket.broadcast.emit("join.players", players);
   });
 };
 

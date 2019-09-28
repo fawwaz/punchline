@@ -3,8 +3,40 @@ const createDbConnection = fireStore => {
   const TestCollection = fireStore.collection("test");
 
   return {
-    createNewRoom: () => {
-      console.log("create Room here...");
+    createNewRoom: ({ roomCode }) => {
+      const initialRoomData = {
+        players: []
+        // answer, questions, round
+      };
+      return RoomsCollection.doc(roomCode).set(initialRoomData);
+    },
+    registerUserToRoom: async ({ roomCode, nickName }) => {
+      const doc = await RoomsCollection.doc(roomCode).get();
+      const roomData = doc.data();
+      const { players } = roomData;
+
+      if (players.includes(nickName)) {
+        return Promise.resolve({
+          success: false,
+          message: "User already exist, try different nickname"
+        });
+      }
+
+      const newRoomData = {
+        ...roomData,
+        players: [...players, nickName]
+      };
+      const data = RoomsCollection.doc(roomCode).set(newRoomData);
+      return Promise.resolve({
+        success: true,
+        message: `Success registering user ${nickName} to room ${roomCode}`
+      });
+    },
+    getAllUserInRoom: async ({ roomCode }) => {
+      const doc = await RoomsCollection.doc(roomCode).get();
+      const roomData = doc.data();
+      const { players } = roomData;
+      return players;
     },
     getAllTest: () => {
       TestCollection.get()

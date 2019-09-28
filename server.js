@@ -31,13 +31,41 @@ io.on("connection", socket => {
 nextApp.prepare().then(() => {
   app.use(bodyParser.json());
 
-  app.get("/messages/:chat", (req, res) => {
-    res.json(messages[req.params.chat]);
+  // app.get("/messages/:chat", (req, res) => {
+  //   res.json(messages[req.params.chat]);
+  // });
+
+  app.post("/createRoom", async (req, res) => {
+    const { roomCode } = req.body;
+    if (!roomCode) {
+      return res.json({
+        success: false,
+        message: `Missing roomCode param on request body`
+      });
+    }
+
+    const ref = await db.createNewRoom({ roomCode });
+    res.json({ success: true, message: `Room created` });
   });
 
-  app.post("/createRoom", (req, res) => {
-    console.log(req.body);
-    res.json({ echo: JSON.stringify(req.body) });
+  app.post("/joinRoom", async (req, res) => {
+    const { roomCode, nickName } = req.body;
+    if (!roomCode || !nickName) {
+      return res.json({
+        success: false,
+        message: `Missing roomCode param or nickName param on request body`
+      });
+    }
+
+    const response = await db.registerUserToRoom({ roomCode, nickName });
+    res.json(response);
+  });
+
+  app.get("/list/user/:roomCode", async (req, res) => {
+    const { params } = req;
+    const { roomCode } = params;
+    const players = await db.getAllUserInRoom({ roomCode });
+    res.json({ success: true, players });
   });
 
   app.get("/check/:roomCode/:nickName", (req, res) => {

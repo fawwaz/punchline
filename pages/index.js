@@ -1,7 +1,8 @@
 import { Component } from "react";
 import Router from "next/router";
 import Link from "next/link";
-import fetch from "isomorphic-unfetch";
+
+import { joinRoom } from "../utils/apis";
 
 class ChatOne extends Component {
   // fetch old messages data from the server
@@ -9,9 +10,10 @@ class ChatOne extends Component {
     const baseUrl = req ? `${req.protocol}://${req.get("Host")}` : "";
     // const response = await fetch(`${baseUrl}/messages/chat1`);
     const { SECRET_TOKEN } = process.env;
-    const response = await fetch(`${process.env.domain}/messages/chat1`);
-    const messages = await response.json();
-    return { messages };
+    // const response = await fetch(`${process.env.domain}/messages/chat1`);
+    // const messages = await response.json();
+    // return { messages };
+    return {};
   }
 
   static defaultProps = {
@@ -22,6 +24,8 @@ class ChatOne extends Component {
   state = {
     nickName: "",
     roomCode: "",
+    message: "",
+    separator: "----------------------------------",
     field: "",
     newMessage: 0,
     messages: this.props.messages,
@@ -29,6 +33,7 @@ class ChatOne extends Component {
     subscribed: false
   };
 
+  /*
   subscribe = () => {
     if (this.state.subscribe && !this.state.subscribed) {
       // connect to WS server and listen event
@@ -64,6 +69,7 @@ class ChatOne extends Component {
   handleOtherMessage = () => {
     this.setState(prevState => ({ newMessage: prevState.newMessage + 1 }));
   };
+  */
 
   handleChangeNickName = event => {
     this.setState({ nickName: event.target.value });
@@ -74,7 +80,7 @@ class ChatOne extends Component {
   };
 
   // send messages to server and add them to the state
-  handleSubmit = event => {
+  handleClickJoin = async event => {
     event.preventDefault();
 
     // // create message object
@@ -93,22 +99,47 @@ class ChatOne extends Component {
     // }))
 
     // check udah registered belum dan nama-nya duplikat gak ?
+    const { nickName, roomCode } = this.state;
+    try {
+      const { data } = await joinRoom({ nickName, roomCode });
+      const { success, message } = data;
 
-    const joinPayload = {
-      roomCode,
-      nickName
-    };
+      if (!success) {
+        this.setState({ message });
+      } else {
+        const joinPayload = {
+          roomCode,
+          nickName
+        };
 
-    this.props.socket.emit("join", joinPayload);
-    Router.push({
-      pathname: "/controller",
-      query: {
-        roomCode: this.state.field
+        this.props.socket.emit("join", joinPayload);
+        Router.push({
+          pathname: "/controller",
+          query: joinPayload
+        });
       }
-    });
+    } catch (e) {
+      console.log("[index][handleClickJoin] Error occured");
+      console.log(e);
+    }
+
+    // const joinPayload = {
+    //   roomCode,
+    //   nickName
+    // };
+
+    // this.props.socket.emit("join", joinPayload);
+    // Router.push({
+    //   pathname: "/controller",
+    //   query: {
+    //     roomCode: this.state.field
+    //   }
+    // });
   };
 
   render() {
+    const { message } = this.state;
+
     return (
       <main>
         {/* <div>
@@ -128,7 +159,7 @@ class ChatOne extends Component {
               <li key={message.id}>{message.value}</li>
             ))}
           </ul>
-          <form onSubmit={e => this.handleSubmit(e)}>
+          <form onSubmit={e => this.handleClickJoin(e)}>
             <input
               onChange={this.handleChange}
               type='text'
@@ -141,7 +172,8 @@ class ChatOne extends Component {
         <Link href={"/lobby"}>
           <a>Create Lobby</a>
         </Link>
-        <form onSubmit={e => this.handleSubmit(e)}>
+        message from server :<pre>{this.state.message}</pre>
+        <form onSubmit={e => this.handleClickJoin(e)}>
           <input
             onChange={this.handleChangeNickName}
             type="text"
