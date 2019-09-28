@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const next = require("next");
+const shuffle = require("lodash/shuffle");
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";
@@ -68,10 +69,24 @@ nextApp.prepare().then(() => {
     res.json({ success: true, players });
   });
 
-  app.get("/check/:roomCode/:nickName", (req, res) => {
+  app.post("/room/initGame", async (req, res) => {
+    const { roomCode, limit } = req.body;
+    await db.initGameForRoom({ roomCode, limit });
+    res.json({ success: true });
+  });
+
+  app.get("/room/:roomCode", async (req, res) => {
     const { params } = req;
-    const { roomCode, nickName } = params;
-    console.log(roomCode, nickName);
+    const { roomCode } = params;
+    const roomData = await db.getRoomData({ roomCode });
+    console.log("roomdata", roomData);
+    res.json({ success: true, roomData });
+  });
+
+  app.post("/room/createAnswer", async (req, res) => {
+    console.log("retrieved");
+    // const { roomCode, nickName, questionIdx } = req.body;
+    // await db.createAnswer({ roomCode, nickName, questionIdx })
   });
 
   app.get("*", (req, res) => {

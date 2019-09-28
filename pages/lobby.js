@@ -1,29 +1,29 @@
 import { Component } from "react";
-import Link from "next/link";
+import Router from "next/router";
 
+import { NUM_OF_ROUND } from "../constants";
 import { generateRoomCode } from "../utils/generator";
-import { createRoom, getPlayersInRoom } from "../utils/apis";
+import { createRoom, getPlayersInRoom, initGame } from "../utils/apis";
 
 class LobbyScreen extends Component {
-  static async getInitialProps({ query, ...rest }) {
-    // console.log('getinitialprops is called', query);
+  static async getInitialProps({ query }) {
     let { roomCode } = query;
     let players = [];
     if (!roomCode) {
       roomCode = generateRoomCode();
-      try {
-        await createRoom({ roomCode });
-      } catch (e) {
-        console.log("Exception : ");
-        console.log(e);
-      }
     }
 
-    console.log("before data");
+    try {
+      await createRoom({ roomCode });
+    } catch (e) {
+      console.log("Exception : ");
+      console.log(e);
+    }
+
     const { data } = await getPlayersInRoom({ roomCode });
-    console.log("data");
     players = data.players;
-    console.log("players :", data.players);
+
+    // Todo : redirect to game?roomcode if the room already have set of question
 
     return {
       roomCode,
@@ -69,6 +69,20 @@ class LobbyScreen extends Component {
     this.setState({ players });
   };
 
+  handleClickStartGame = async e => {
+    e.preventDefault();
+    const { roomCode } = this.props;
+    const { data } = await initGame({ roomCode, limit: NUM_OF_ROUND });
+    if (data.success) {
+      Router.push({
+        pathname: "/game",
+        query: {
+          roomCode
+        }
+      });
+    }
+  };
+
   render() {
     const { roomCode, message } = this.props;
     const { players } = this.state;
@@ -84,9 +98,7 @@ class LobbyScreen extends Component {
           ))}
         </ul>
         <button>Delete Lobby</button>
-        <Link href={{ pathname: "/game", query: { roomCode: "0123" } }}>
-          <button>Start The Game !</button>
-        </Link>
+        <button onClick={this.handleClickStartGame}>Start The Game !</button>
       </div>
     );
   }

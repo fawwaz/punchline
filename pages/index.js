@@ -122,19 +122,6 @@ class ChatOne extends Component {
       console.log("[index][handleClickJoin] Error occured");
       console.log(e);
     }
-
-    // const joinPayload = {
-    //   roomCode,
-    //   nickName
-    // };
-
-    // this.props.socket.emit("join", joinPayload);
-    // Router.push({
-    //   pathname: "/controller",
-    //   query: {
-    //     roomCode: this.state.field
-    //   }
-    // });
   };
 
   render() {
