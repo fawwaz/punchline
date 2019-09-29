@@ -1,5 +1,5 @@
 module.exports = {
   env: {
-    domain: "http://localhost:3000",
+    domain: "http://localhost:3000"
   }
-}
+};

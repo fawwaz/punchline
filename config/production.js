@@ -1,5 +1,5 @@
 module.exports = {
   env: {
-    domain: `https://punchline-party-game.herokuapp.com`,
+    domain: `https://punchline-party-game.herokuapp.com`
   }
-}
+};
