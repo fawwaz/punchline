@@ -1,4 +1,5 @@
 import { Component } from "react";
+import shuffle from "lodash/shuffle";
 
 import { GAME_STATE } from "../constants";
 import { createSelector } from "../utils/selector";
@@ -150,6 +151,7 @@ class GameController extends Component {
         <br />
         <hr />
         {this.state.message}
+        {gameState === "IDDLE" && <>Waiting to start the game ...</>}
         {!alreadySubmitAnswer && gameState === GAME_STATE.LYING && (
           <>
             <input
@@ -168,7 +170,7 @@ class GameController extends Component {
           <>
             <h3>Choose the answer : </h3>
             <hr />
-            {(answers[questionIdx] || []).map((answer, idx) => (
+            {shuffle(answers[questionIdx] || []).map((answer, idx) => (
               <div key={idx}>
                 <button onClick={() => this.handleChooseAnswer(idx)}>
                   {answer.value}

@@ -70,7 +70,8 @@ nextApp.prepare().then(() => {
 
   app.post("/room/initGame", async (req, res) => {
     const { roomCode, limit } = req.body;
-    await db.initGameForRoom({ roomCode, limit });
+    const roomData = await db.initGameForRoom({ roomCode, limit });
+    io.emit("game.updateState", roomData);
     res.json({ success: true });
   });
 

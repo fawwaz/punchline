@@ -1,3 +1,5 @@
+import shuffle from "lodash/shuffle";
+
 export const createSelector = roomDataState => {
   const {
     answers,
@@ -20,12 +22,18 @@ export const createSelector = roomDataState => {
     },
     getWhoAlreadySubmitAnswer: () => {
       const currAnswer = answers[questionIdx];
-      const owners = currAnswer.map(a => a.owner);
+      const owners = (currAnswer || []).map(a => a.owner);
       return [...new Set(owners)];
     },
     getWhoAlreadyVoted: () => {
-      const voters = votes[questionIdx];
+      const voters = votes[questionIdx] || [];
       return [...new Set(voters)];
+    },
+    getQuestion: () => {
+      return questions[questionIdx].question;
+    },
+    getAnswerList: () => {
+      return shuffle(answers[questionIdx]).map(a => a.value);
     }
   };
 };

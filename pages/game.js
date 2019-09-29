@@ -1,9 +1,10 @@
 import { Component } from "react";
 import Router from "next/router";
-import values from "lodash/values";
 
-import { NUM_OF_ROUND } from "../constants";
+import { NUM_OF_ROUND, GAME_STATE } from "../constants";
 import { getRoomData } from "../utils/apis";
+import { createSelector } from "../utils/selector";
+import Timer from "../components/Timer";
 
 class GameScreen extends Component {
   static async getInitialProps({ query, res }) {
@@ -56,7 +57,6 @@ class GameScreen extends Component {
   };
   componentDidMount() {
     this.subscribe();
-    this.setTimer();
   }
 
   componentDidUpdate() {
@@ -78,35 +78,90 @@ class GameScreen extends Component {
     this.setState({ roomDataState: updateState });
   };
 
-  setTimer() {
-    setTimeout(() => {
-      this.currInterval = setInterval(() => {
-        this.setState(prevState => {
-          if (prevState.remainingTime === 0) {
-            clearInterval(this.currInterval);
-            return {};
-          } else {
-            return { remainingTime: prevState.remainingTime - 1 };
-          }
-        });
-      }, 1000);
-    }, 2500);
-  }
-
   render() {
     const { questions } = this.props;
-    const { questionIdx } = this.state.roomDataState;
+    const { questionIdx, gameState } = this.state.roomDataState;
+
+    const selector = createSelector(this.state.roomDataState);
+    const submittedAnswer = selector.getWhoAlreadySubmitAnswer();
+    const votedAnswer = selector.getWhoAlreadyVoted();
+    const question = selector.getQuestion();
+    const sortedVotingScore = selector.getSortedVotingScore();
+    const answerList = selector.getAnswerList();
+    const playerAnswers = sortedVotingScore.slice(0, -1);
+    const systemAnswer = sortedVotingScore[sortedVotingScore.length - 1];
 
     return (
       <div>
-        <h2>Time to answer: {this.state.remainingTime} </h2>
         <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
-        Timer progress bar ...
+        {gameState === GAME_STATE.LYING && (
+          <>
+            <h2>Question: {question}</h2>
+            <h4>Player who already submit his answer</h4>
+            <ul>
+              {submittedAnswer
+                .filter(a => a !== "SYSTEM")
+                .map(player => (
+                  <li>{player}</li>
+                ))}
+            </ul>
+          </>
+        )}
+        {gameState === GAME_STATE.ANSWER && (
+          <>
+            <h2>Question: {question}</h2>
+            <h4>Choose the answer on your phone !</h4>
+            <ol>
+              {answerList.map(a => (
+                <li>{a}</li>
+              ))}
+            </ol>
+          </>
+        )}
+        {gameState === GAME_STATE.EXPLAIN && (
+          <>
+            <h3>Scoring ... </h3>
+            <ol>
+              {playerAnswers.map((answer, idx) => (
+                <li key={idx}>
+                  <h5>Answer : {answer.value}</h5>
+                  <p> successfully tricks : </p>
+                  <ul>
+                    {answer.voter.map(u => (
+                      <li>{u}</li>
+                    ))}
+                  </ul>
+                  <h4>
+                    <b>IS FAKE ANSWER !!!</b>
+                  </h4>
+                  <p>it was created by : {answer.owner} </p>
+                  <p>so he get : {answer.voter.length * 500} points</p>
+                </li>
+              ))}
+              <li>
+                <h5>Answer : {systemAnswer.value}</h5>
+                <p>is chosen by : </p>
+                <ul>
+                  {systemAnswer.voter.map(u => (
+                    <li>{u}</li>
+                  ))}
+                </ul>
+                <h4>
+                  <b>IS THE TRUTH !!!</b>
+                </h4>
+                <p>so each of them get : 2000 points</p>
+              </li>
+            </ol>
+            <br />
+            <br />
+            <button>Continue to next round !</button>
+          </>
+        )}
+        <h2>
+          <Timer />{" "}
+        </h2>
+        TODO : Timer progress bar ...
         {/* <h1>{question.question}</h1> */}
-        Submitted answer
-        <ul>
-          <li>otong</li>
-        </ul>
         Scoring + load next question
       </div>
     );

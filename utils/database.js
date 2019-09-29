@@ -15,7 +15,7 @@ const createDbConnection = fireStore => {
           answers: {},
           votes: {},
           questionIdx: 0,
-          gameState: GAME_STATE.LYING
+          gameState: "IDDLE"
         };
         return RoomsCollection.doc(roomCode).set(initialRoomData);
       }
@@ -71,6 +71,7 @@ const createDbConnection = fireStore => {
       return players;
     },
     initGameForRoom: async ({ limit, roomCode }) => {
+      let updatedRoomData = {};
       const allFacts = [];
       const factDocs = await FactsCollection.get();
       factDocs.forEach(doc => allFacts.push(doc.data()));
@@ -102,12 +103,19 @@ const createDbConnection = fireStore => {
           await roomRef.update({
             questions: nextQuestions,
             answers: nextAnswers,
-            votes: nextVotes
+            votes: nextVotes,
+            gameState: "LYING"
           });
+
+          // Get updated  room data & dispatch
+          const doc = await RoomsCollection.doc(roomCode).get();
+          updatedRoomData = doc.data();
         } catch (e) {
           console.log("error pas update ", e);
         }
       }
+
+      return updatedRoomData;
     },
     getRoomData: async ({ roomCode }) => {
       const doc = await RoomsCollection.doc(roomCode).get();
