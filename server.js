@@ -94,6 +94,12 @@ nextApp.prepare().then(() => {
     res.json(response);
   });
 
+  app.post("/room/setRoomData", async (req, res) => {
+    const { roomCode, key, value } = req.body;
+    const roomData = await db.setRoomData({ roomCode, key, value });
+    res.json({ success: true, roomData });
+  });
+
   app.get("*", (req, res) => {
     return nextHandler(req, res);
   });

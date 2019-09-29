@@ -9,7 +9,8 @@ class GameScreen extends Component {
   static async getInitialProps({ query, res }) {
     const { roomCode } = query;
     let questions = [],
-      questionIdx = 0;
+      questionIdx = 0,
+      roomData;
 
     // Protect from empty room code
     if (!roomCode) {
@@ -25,22 +26,19 @@ class GameScreen extends Component {
 
     try {
       const { data } = await getRoomData({ roomCode });
-      const { roomData } = data;
-      questions = roomData.questions;
-      questionIdx = roomData.questionIdx;
+      roomData = data.roomData;
     } catch (e) {
       console.log("[GameScreen][getInitialProps] An error occured");
       console.log(e);
     }
 
     return {
-      questions,
-      questionIdx
+      roomData
     };
   }
 
   state = {
-    questionIdx: this.props.questionIdx,
+    roomDataState: this.props.roomData,
     remainingTime: 120,
     subscribe: false,
     subscribed: false,
@@ -77,8 +75,7 @@ class GameScreen extends Component {
 
   // add messages from server to the state
   handleUpdateState = updateState => {
-    console.log("updatedState: ", updateState);
-    // this.setState(state => ({ messages: state.messages.concat(message) }));
+    this.setState({ roomDataState: updateState });
   };
 
   setTimer() {
@@ -96,19 +93,14 @@ class GameScreen extends Component {
     }, 2500);
   }
 
-  // componentWillUnmount() {
-  //   clearInterval(this.currInterval);
-  // }
-
   render() {
     const { questions } = this.props;
-    const { questionIdx } = this.state;
-    // const question = questions[questionIdx];
-    // console.log(question);
+    const { questionIdx } = this.state.roomDataState;
+
     return (
       <div>
         <h2>Time to answer: {this.state.remainingTime} </h2>
-        {/* <pre>{JSON.stringify(this.props.questions, null, 2)}</pre> */}
+        <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
         Timer progress bar ...
         {/* <h1>{question.question}</h1> */}
         Submitted answer

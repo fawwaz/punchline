@@ -109,6 +109,10 @@ const createDbConnection = fireStore => {
       const roomData = doc.data();
       return roomData;
     },
+    setRoomData: async ({ roomCode, key, value }) => {
+      const roomRef = RoomsCollection.doc(roomCode);
+      await roomRef.update({ [key]: value });
+    },
     createAnswer: async ({ roomCode, nickName, value, questionIdx }) => {
       const roomRef = RoomsCollection.doc(roomCode);
       return fireStore
