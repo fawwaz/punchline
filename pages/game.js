@@ -2,7 +2,7 @@ import { Component } from "react";
 import Router from "next/router";
 
 import { NUM_OF_ROUND, GAME_STATE } from "../constants";
-import { getRoomData } from "../utils/apis";
+import { getRoomData, nextRound, deleteRoom } from "../utils/apis";
 import { createSelector } from "../utils/selector";
 import Timer from "../components/Timer";
 
@@ -34,6 +34,7 @@ class GameScreen extends Component {
     }
 
     return {
+      roomCode,
       roomData
     };
   }
@@ -78,6 +79,18 @@ class GameScreen extends Component {
     this.setState({ roomDataState: updateState });
   };
 
+  handleClickNextRound = async e => {
+    const { roomCode } = this.props;
+    const scoreMapping = {};
+    const { data } = await nextRound({ roomCode, scoreMapping });
+  };
+
+  handleClickReset = async e => {
+    const { roomCode } = this.props;
+    await deleteRoom({ roomCode });
+    Router.push("/");
+  };
+
   render() {
     const { questions } = this.props;
     const { questionIdx, gameState } = this.state.roomDataState;
@@ -94,6 +107,8 @@ class GameScreen extends Component {
     return (
       <div>
         <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
+        Scoring + load next question
+        <Timer />
         {gameState === GAME_STATE.LYING && (
           <>
             <h2>Question: {question}</h2>
@@ -154,15 +169,31 @@ class GameScreen extends Component {
             </ol>
             <br />
             <br />
-            <button>Continue to next round !</button>
+            <button onClick={this.handleClickNextRound}>
+              Continue to next round !
+            </button>
           </>
         )}
-        <h2>
-          <Timer />{" "}
-        </h2>
-        TODO : Timer progress bar ...
-        {/* <h1>{question.question}</h1> */}
-        Scoring + load next question
+        {gameState === GAME_STATE.END && (
+          <>
+            <h2>End of game !</h2>
+            <p>
+              Sorry that I am running out of time so you may found a glitch here
+              and there, it also comes without animation / styling
+            </p>
+            <p>
+              I also don't have enough content / data to fill the set of
+              questions
+            </p>
+            <p>
+              I hope you understand the general gameplay / interaction used in
+              this game
+            </p>
+            <button onClick={this.handleClickReset}>
+              Reset This Room State & Back to homescreen
+            </button>
+          </>
+        )}
       </div>
     );
   }

@@ -75,6 +75,22 @@ nextApp.prepare().then(() => {
     res.json({ success: true });
   });
 
+  app.post("/room/nextRound", async (req, res) => {
+    const { roomCode } = req.body;
+    // TODO : SCoremapping is not impemented yet
+    await db.nextRound({ roomCode });
+    const roomData = await db.getRoomData({ roomCode });
+    io.emit("game.updateState", roomData);
+    res.json({ success: true });
+  });
+
+  app.post("/room/delete", async (req, res) => {
+    const { roomCode } = req.body;
+    // TODO : SCoremapping is not impemented yet
+    await db.deleteRoom({ roomCode });
+    res.json({ success: true });
+  });
+
   app.get("/room/:roomCode", async (req, res) => {
     const { params } = req;
     const { roomCode } = params;

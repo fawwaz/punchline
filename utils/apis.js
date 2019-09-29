@@ -31,3 +31,15 @@ export const chooseAnswer = ({ answerIdx, questionIdx, roomCode, nickName }) =>
     roomCode,
     nickName
   });
+
+export const nextRound = ({ roomCode, scoreMapping }) =>
+  request.post("/room/nextRound", {
+    roomCode,
+    scoreMapping
+  });
+
+export const deleteRoom = ({ roomCode }) => {
+  request.post("/room/delete", {
+    roomCode
+  });
+};

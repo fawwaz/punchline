@@ -110,10 +110,8 @@ class LobbyScreen extends Component {
             </ul>
             <br />
             <hr />
-            <button
-              onClick={this.handleClickStartGame}
-              disabled={players.length < 1}
-            >
+            <button onClick={this.handleClickStartGame}>
+              // disabled={players.length < 1}
               Start The Game !
             </button>
             <br />

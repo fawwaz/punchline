@@ -117,6 +117,45 @@ const createDbConnection = fireStore => {
 
       return updatedRoomData;
     },
+    nextRound: async ({ roomCode, scoreMapping }) => {
+      const roomRef = RoomsCollection.doc(roomCode);
+      return fireStore
+        .runTransaction(t => {
+          return t.get(roomRef).then(roomDoc => {
+            const currRoomData = roomDoc.data();
+            const { questionIdx, questions } = currRoomData;
+            // check questionIdx === length of available questions - 1
+            // TODO : update scoring
+            // TODO: kalau udah end, misal klik back to homescreen doing clean up (remove room)
+            const numOfQuestion = Object.keys(questions).length;
+            if (questionIdx === numOfQuestion - 1) {
+              t.update(roomRef, { gameState: "END" });
+            } else {
+              t.update(roomRef, {
+                gameState: "LYING",
+                questionIdx: questionIdx + 1
+              });
+            }
+          });
+        })
+        .then(result => {
+          return Promise.resolve({
+            success: true,
+            message: `Success submitting answer`
+          });
+        })
+        .catch(err => {
+          console.log("err in transaction", err);
+          return Promise.resolve({
+            success: false,
+            message: `Failed submitting answer,`
+          });
+        });
+    },
+    deleteRoom: async ({ roomCode }) => {
+      const roomRef = RoomsCollection.doc(roomCode);
+      await roomRef.delete();
+    },
     getRoomData: async ({ roomCode }) => {
       const doc = await RoomsCollection.doc(roomCode).get();
       const roomData = doc.data();
@@ -196,18 +235,6 @@ const createDbConnection = fireStore => {
             message: `Failed submitting answer,`
           });
         });
-    },
-    getAllTest: () => {
-      // TestCollection.get()
-      //   .then(snapshot => {
-      //     snapshot.forEach(doc => {
-      //       // messages.chat1.push(doc.data());
-      //       console.log(doc.id, "=>", doc.data());
-      //     });
-      //   })
-      //   .catch(err => {
-      //     console.log("Error getting documents", err);
-      //   });
     }
   };
 };
