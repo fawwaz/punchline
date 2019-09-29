@@ -76,9 +76,10 @@ nextApp.prepare().then(() => {
   });
 
   app.post("/room/nextRound", async (req, res) => {
-    const { roomCode } = req.body;
+    const { roomCode, scoreMapping } = req.body;
     // TODO : SCoremapping is not impemented yet
     await db.nextRound({ roomCode });
+    const updatedScore = await db.updateScore({ scoreMapping });
     const roomData = await db.getRoomData({ roomCode });
     io.emit("game.updateState", roomData);
     res.json({ success: true });

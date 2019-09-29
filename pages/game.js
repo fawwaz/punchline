@@ -81,10 +81,31 @@ class GameScreen extends Component {
 
   handleClickNextRound = async e => {
     const selector = createSelector(this.state.roomDataState);
+    const players = selector.getPlayers();
     const sortedVotingScore = selector.getSortedVotingScore();
+    const playerAnswers = sortedVotingScore.slice(0, -1);
+    const systemAnswer = sortedVotingScore[sortedVotingScore.length - 1];
+
+    let scoreMapping = {};
+    // init score mapping
+    players.forEach(player => {
+      scoreMapping[player] = 0;
+    });
+
+    // Add base for those who correctly guess the answer
+    systemAnswer.voter.forEach(v => {
+      scoreMapping[v] = 2000;
+    });
+
+    // Add Those who succes to trick other
+    playerAnswers.forEach(answer => {
+      const numOfVictim = answer.voter.length;
+      scoreMapping[answer.owner] =
+        scoreMapping[answer.owner] + 500 * numOfVictim;
+    });
 
     const { roomCode } = this.props;
-    const scoreMapping = {};
+
     const { data } = await nextRound({ roomCode, scoreMapping });
   };
 
@@ -164,17 +185,20 @@ class GameScreen extends Component {
                     <li>{u}</li>
                   ))}
                 </ul>
+                {systemAnswer.voter.length === 0 && <b>NO ONE..</b>}
                 <h4>
                   <b>IS THE TRUTH !!!</b>
                 </h4>
-                <p>so each of them get : 2000 points</p>
+                {systemAnswer.voter.length > 0 && (
+                  <p>so each of them get : 2000 points</p>
+                )}
               </li>
             </ol>
-            <br />
             <br />
             <button onClick={this.handleClickNextRound}>
               Continue to next round !
             </button>
+            <br />
           </>
         )}
         {gameState === GAME_STATE.END && (

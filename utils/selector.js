@@ -34,6 +34,9 @@ export const createSelector = roomDataState => {
     },
     getAnswerList: () => {
       return shuffle(answers[questionIdx]).map(a => a.value);
+    },
+    getPlayers: () => {
+      return players;
     }
   };
 };

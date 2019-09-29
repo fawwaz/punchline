@@ -1,3 +1,4 @@
+const FieldValue = require("firebase-admin").firestore.FieldValue;
 const shuffle = require("lodash/shuffle");
 
 const createDbConnection = fireStore => {
@@ -46,7 +47,8 @@ const createDbConnection = fireStore => {
             .then(idx_in_room => {
               t.set(playerRef, {
                 nickName: nickName,
-                idx_in_room: idx_in_room
+                idx_in_room: idx_in_room,
+                score: 0
               });
             });
         })
@@ -129,9 +131,9 @@ const createDbConnection = fireStore => {
             // TODO: kalau udah end, misal klik back to homescreen doing clean up (remove room)
             const numOfQuestion = Object.keys(questions).length;
             if (questionIdx === numOfQuestion - 1) {
-              t.update(roomRef, { gameState: "END" });
+              return t.update(roomRef, { gameState: "END" });
             } else {
-              t.update(roomRef, {
+              return t.update(roomRef, {
                 gameState: "LYING",
                 questionIdx: questionIdx + 1
               });
@@ -151,6 +153,16 @@ const createDbConnection = fireStore => {
             message: `Failed submitting answer,`
           });
         });
+    },
+    updateScore: async ({ scoreMapping }) => {
+      let batch = fireStore.batch();
+      Object.keys(scoreMapping).forEach(user => {
+        const userRef = PlayersCollection.doc(user);
+        const incrementBy = FieldValue.increment(scoreMapping[user]);
+        batch.update(userRef, { score: incrementBy });
+      });
+
+      return await batch.commit();
     },
     deleteRoom: async ({ roomCode }) => {
       const roomRef = RoomsCollection.doc(roomCode);
