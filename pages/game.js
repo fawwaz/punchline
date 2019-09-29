@@ -80,6 +80,9 @@ class GameScreen extends Component {
   };
 
   handleClickNextRound = async e => {
+    const selector = createSelector(this.state.roomDataState);
+    const sortedVotingScore = selector.getSortedVotingScore();
+
     const { roomCode } = this.props;
     const scoreMapping = {};
     const { data } = await nextRound({ roomCode, scoreMapping });
@@ -107,10 +110,9 @@ class GameScreen extends Component {
     return (
       <div>
         <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
-        Scoring + load next question
-        <Timer />
         {gameState === GAME_STATE.LYING && (
           <>
+            <Timer />
             <h2>Question: {question}</h2>
             <h4>Player who already submit his answer</h4>
             <ul>
@@ -124,6 +126,7 @@ class GameScreen extends Component {
         )}
         {gameState === GAME_STATE.ANSWER && (
           <>
+            <Timer />
             <h2>Question: {question}</h2>
             <h4>Choose the answer on your phone !</h4>
             <ol>

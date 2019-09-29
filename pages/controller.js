@@ -1,4 +1,5 @@
 import { Component } from "react";
+import Router from "next/router";
 import shuffle from "lodash/shuffle";
 
 import { GAME_STATE } from "../constants";
@@ -61,6 +62,9 @@ class GameController extends Component {
 
   componentDidUpdate() {
     this.subscribe();
+    if (this.state.roomDataState.gameState === "END") {
+      Router.push("/");
+    }
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -145,6 +149,10 @@ class GameController extends Component {
 
     const votedAnswer = selector.getWhoAlreadyVoted();
     const alreadyVotedAnswer = votedAnswer.includes(nickName);
+    const mappedAnswer = (answers[questionIdx] || []).map((a, idx) => ({
+      ...a,
+      id: idx
+    }));
     return (
       <div>
         <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
@@ -170,9 +178,9 @@ class GameController extends Component {
           <>
             <h3>Choose the answer : </h3>
             <hr />
-            {shuffle(answers[questionIdx] || []).map((answer, idx) => (
+            {shuffle(mappedAnswer).map((answer, idx) => (
               <div key={idx}>
-                <button onClick={() => this.handleChooseAnswer(idx)}>
+                <button onClick={() => this.handleChooseAnswer(answer.id)}>
                   {answer.value}
                 </button>
                 <br />
