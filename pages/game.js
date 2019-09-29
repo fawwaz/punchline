@@ -143,7 +143,6 @@ class GameScreen extends Component {
 
     return (
       <div>
-        <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
         {gameState === GAME_STATE.LYING && (
           <>
             <Timer />

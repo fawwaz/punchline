@@ -150,7 +150,6 @@ class ChatOne extends Component {
               <button>Create Lobby</button>
             </Link>
             <br />
-            <pre>{this.state.message}</pre>
             <form onSubmit={e => this.handleClickJoin(e)}>
               <input
                 onChange={this.handleChangeNickName}

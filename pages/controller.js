@@ -155,7 +155,6 @@ class GameController extends Component {
     }));
     return (
       <div>
-        <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
         <br />
         <hr />
         {this.state.message}
