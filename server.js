@@ -92,6 +92,13 @@ nextApp.prepare().then(() => {
     res.json({ success: true });
   });
 
+  app.get("/room/players/:roomCode", async (req, res) => {
+    const { params } = req;
+    const { roomCode } = params;
+    const players = await db.getScores({ roomCode });
+    res.json({ success: true, players });
+  });
+
   app.get("/room/:roomCode", async (req, res) => {
     const { params } = req;
     const { roomCode } = params;

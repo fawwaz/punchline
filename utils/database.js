@@ -48,7 +48,8 @@ const createDbConnection = fireStore => {
               t.set(playerRef, {
                 nickName: nickName,
                 idx_in_room: idx_in_room,
-                score: 0
+                score: 0,
+                roomCode
               });
             });
         })
@@ -247,6 +248,15 @@ const createDbConnection = fireStore => {
             message: `Failed submitting answer,`
           });
         });
+    },
+    getScores: async ({ roomCode }) => {
+      const result = [];
+      const playerRef = PlayersCollection.where("roomCode", "==", roomCode);
+      const snapshot = await playerRef.get();
+      snapshot.forEach(doc => {
+        result.push(doc.data());
+      });
+      return result;
     }
   };
 };

@@ -60,8 +60,6 @@ const configureSocket = (io, db) => {
       }
     });
   });
-
-  // socket.on("game.click")
 };
 
 module.exports = {

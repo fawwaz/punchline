@@ -43,3 +43,6 @@ export const deleteRoom = ({ roomCode }) => {
     roomCode
   });
 };
+
+export const getPlayersData = ({ roomCode }) =>
+  request.get(`/room/players/${roomCode}`);

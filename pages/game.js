@@ -2,7 +2,12 @@ import { Component } from "react";
 import Router from "next/router";
 
 import { NUM_OF_ROUND, GAME_STATE } from "../constants";
-import { getRoomData, nextRound, deleteRoom } from "../utils/apis";
+import {
+  getRoomData,
+  nextRound,
+  deleteRoom,
+  getPlayersData
+} from "../utils/apis";
 import { createSelector } from "../utils/selector";
 import Timer from "../components/Timer";
 
@@ -115,6 +120,14 @@ class GameScreen extends Component {
     Router.push("/");
   };
 
+  handleShowScore = async e => {
+    const { roomCode } = this.props;
+    const { data } = await getPlayersData({ roomCode });
+    const { players } = data;
+    const sortedPlayers = players.sort((p1, p2) => p2.score - p1.score);
+    this.setState({ scores: sortedPlayers });
+  };
+
   render() {
     const { questions } = this.props;
     const { questionIdx, gameState } = this.state.roomDataState;
@@ -216,6 +229,16 @@ class GameScreen extends Component {
               I hope you understand the general gameplay / interaction used in
               this game
             </p>
+            <button onClick={this.handleShowScore}>Show Score !</button>
+            <ol>
+              {(this.state.scores || []).map(p => (
+                <li>
+                  {p.nickName} - {p.score}
+                </li>
+              ))}
+            </ol>
+            <br />
+            <hr />
             <button onClick={this.handleClickReset}>
               Reset This Room State & Back to homescreen
             </button>
