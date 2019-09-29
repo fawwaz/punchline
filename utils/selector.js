@@ -1,5 +1,12 @@
-const createSelector = roomDataState => {
-  const { answers, questions, players, gameState, questionIdx } = roomDataState;
+export const createSelector = roomDataState => {
+  const {
+    answers,
+    votes,
+    questions,
+    players,
+    gameState,
+    questionIdx
+  } = roomDataState;
 
   return {
     getSortedVotingScore: () => {
@@ -15,6 +22,10 @@ const createSelector = roomDataState => {
       const currAnswer = answers[questionIdx];
       const owners = currAnswer.map(a => a.owner);
       return [...new Set(owners)];
+    },
+    getWhoAlreadyVoted: () => {
+      const voters = votes[questionIdx];
+      return [...new Set(voters)];
     }
   };
 };

@@ -14,7 +14,8 @@ const createDbConnection = fireStore => {
           questions: {},
           answers: {},
           votes: {},
-          questionIdx: 0
+          questionIdx: 0,
+          gameState: GAME_STATE.LYING
         };
         return RoomsCollection.doc(roomCode).set(initialRoomData);
       }
@@ -115,7 +116,8 @@ const createDbConnection = fireStore => {
     },
     setRoomData: async ({ roomCode, key, value }) => {
       const roomRef = RoomsCollection.doc(roomCode);
-      await roomRef.update({ [key]: value });
+      const roomData = await roomRef.update({ [key]: value });
+      return roomData;
     },
     createAnswer: async ({ roomCode, nickName, value, questionIdx }) => {
       const roomRef = RoomsCollection.doc(roomCode);

@@ -1,5 +1,7 @@
 import { Component } from "react";
 
+import { GAME_STATE } from "../constants";
+import { createSelector } from "../utils/selector";
 import { getRoomData, createAnswer, chooseAnswer } from "../utils/apis";
 
 class GameController extends Component {
@@ -132,25 +134,23 @@ class GameController extends Component {
 
   render() {
     const {
-      roomDataState: { answers, questions, questionIdx }
+      roomDataState: { answers, questions, questionIdx, gameState }
     } = this.state;
     const { nickName, roomCode } = this.props;
 
+    const selector = createSelector(this.state.roomDataState);
+    const submittedAnswer = selector.getWhoAlreadySubmitAnswer();
+    const alreadySubmitAnswer = submittedAnswer.includes(nickName);
+
+    const votedAnswer = selector.getWhoAlreadyVoted();
+    const alreadyVotedAnswer = votedAnswer.includes(nickName);
     return (
       <div>
         <pre>{JSON.stringify(this.state.roomDataState, null, 2)}</pre>
-        {/* initial props check dulu game id-nya registered gak ..., kalau enggak
-        display input message lagi buat join room
-        <button>Template answer 1</button>
-        <button>Template answer 2</button>
-        <button>Template answer 3</button> */}
         <br />
         <hr />
         {this.state.message}
-        <br />
-        <hr />
-        {/* <form onSubmit={e => this.handleSubmit(e)}> */}
-        {!this.state.submitted && (
+        {!alreadySubmitAnswer && gameState === GAME_STATE.LYING && (
           <>
             <input
               onChange={this.handleChange}
@@ -161,19 +161,23 @@ class GameController extends Component {
             <button onClick={this.handleSubmit}>Send</button>
           </>
         )}
-        {/* </form> */}
+
         <br />
         <hr />
-        <h3>Choose the answer : </h3>
-        <hr />
-        {(answers[questionIdx] || []).map((answer, idx) => (
+        {!alreadyVotedAnswer && gameState === GAME_STATE.ANSWER && (
           <>
-            <button key={idx} onClick={() => this.handleChooseAnswer(idx)}>
-              {answer.value}
-            </button>
-            <br />
+            <h3>Choose the answer : </h3>
+            <hr />
+            {(answers[questionIdx] || []).map((answer, idx) => (
+              <div key={idx}>
+                <button onClick={() => this.handleChooseAnswer(idx)}>
+                  {answer.value}
+                </button>
+                <br />
+              </div>
+            ))}
           </>
-        ))}
+        )}
       </div>
     );
   }
