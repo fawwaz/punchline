@@ -16,5 +16,10 @@ export const initGame = ({ roomCode, limit }) =>
   request.post("/room/initGame", { roomCode, limit });
 export const getRoomData = ({ roomCode }) => request.get(`/room/${roomCode}`);
 
-export const createAnswer = ({ roomCode, nickName, questionIdx }) =>
-  request.post("/room/createAnswer", { roomCode, nickName, questionIdx });
+export const createAnswer = ({ roomCode, nickName, questionIdx, value }) =>
+  request.post("/room/createAnswer", {
+    roomCode,
+    nickName,
+    questionIdx,
+    value
+  });

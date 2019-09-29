@@ -3,6 +3,7 @@ const shuffle = require("lodash/shuffle");
 const createDbConnection = fireStore => {
   const RoomsCollection = fireStore.collection("rooms");
   const FactsCollection = fireStore.collection("facts");
+  const PlayersCollection = fireStore.collection("players");
 
   return {
     createNewRoom: async ({ roomCode }) => {
@@ -10,14 +11,16 @@ const createDbConnection = fireStore => {
       if (!doc.exists) {
         const initialRoomData = {
           players: [],
-          questions: []
+          questions: {},
+          answers: {},
+          questionIdx: 0
         };
         return RoomsCollection.doc(roomCode).set(initialRoomData);
       }
     },
     registerUserToRoom: async ({ roomCode, nickName }) => {
-      const doc = await RoomsCollection.doc(roomCode).get();
-      const roomData = doc.data();
+      const roomRef = RoomsCollection.doc(roomCode);
+      const roomData = (await roomRef.get()).data();
       const { players } = roomData;
 
       if (players.includes(nickName)) {
@@ -27,15 +30,37 @@ const createDbConnection = fireStore => {
         });
       }
 
-      const newRoomData = {
-        ...roomData,
-        players: [...players, nickName]
-      };
-      const data = RoomsCollection.doc(roomCode).set(newRoomData);
-      return Promise.resolve({
-        success: true,
-        message: `Success registering user ${nickName} to room ${roomCode}`
-      });
+      const playerRef = PlayersCollection.doc(nickName);
+      return fireStore
+        .runTransaction(t => {
+          return t
+            .get(roomRef)
+            .then(roomDoc => {
+              const currRoomData = roomDoc.data();
+              const newPlayers = [...currRoomData.players, nickName];
+              t.update(roomRef, { players: newPlayers });
+              return newPlayers.length;
+            })
+            .then(idx_in_room => {
+              t.set(playerRef, {
+                nickName: nickName,
+                idx_in_room: idx_in_room
+              });
+            });
+        })
+        .then(result => {
+          return Promise.resolve({
+            success: true,
+            message: `Success registering user ${nickName} to room ${roomCode}`
+          });
+        })
+        .catch(err => {
+          console.log("err in transaction", err);
+          return Promise.resolve({
+            success: false,
+            message: `Failed registering user,`
+          });
+        });
     },
     getAllUserInRoom: async ({ roomCode }) => {
       const doc = await RoomsCollection.doc(roomCode).get();
@@ -49,22 +74,74 @@ const createDbConnection = fireStore => {
       factDocs.forEach(doc => allFacts.push(doc.data()));
       const facts = shuffle(allFacts).slice(0, limit);
 
-      const roomDocs = await RoomsCollection.doc(roomCode).get();
+      const roomRef = RoomsCollection.doc(roomCode);
+      const roomDocs = await roomRef.get();
       const currRoomData = roomDocs.data();
-      const nextRoomData = {
-        ...currRoomData,
-        questions: facts,
-        questionIdx: 0
-      };
+      const nextQuestions = {};
+      const nextAnswers = {};
+      facts.forEach((fact, idx) => {
+        nextQuestions[idx] = {
+          ...fact,
+          answers: []
+        };
+        nextAnswers[idx] = [
+          {
+            owner: "SYSTEM",
+            value: fact.answer,
+            voter: []
+          }
+        ];
+      });
       // avoid duplication
-      if (!currRoomData.questions || currRoomData.questions.length === 0) {
-        await RoomsCollection.doc(roomCode).set(nextRoomData);
+      if (Object.keys(currRoomData.questions).length === 0) {
+        try {
+          await roomRef.update({
+            questions: nextQuestions,
+            answers: nextAnswers
+          });
+        } catch (e) {
+          console.log("error pas update ", e);
+        }
       }
     },
     getRoomData: async ({ roomCode }) => {
       const doc = await RoomsCollection.doc(roomCode).get();
       const roomData = doc.data();
       return roomData;
+    },
+    createAnswer: async ({ roomCode, nickName, value, questionIdx }) => {
+      const roomRef = RoomsCollection.doc(roomCode);
+      return fireStore
+        .runTransaction(t => {
+          return t.get(roomRef).then(roomDoc => {
+            const currRoomData = roomDoc.data();
+            // must refactor questions first
+            const newAnswers = { ...currRoomData.answers };
+            newAnswers[questionIdx] = [
+              ...currRoomData.answers[questionIdx],
+              {
+                owner: nickName,
+                value: value,
+                voter: []
+              }
+            ];
+
+            t.update(roomRef, { answers: newAnswers });
+          });
+        })
+        .then(result => {
+          return Promise.resolve({
+            success: true,
+            message: `Success submitting answer`
+          });
+        })
+        .catch(err => {
+          console.log("err in transaction", err);
+          return Promise.resolve({
+            success: false,
+            message: `Failed submitting answer,`
+          });
+        });
     },
     getAllTest: () => {
       // TestCollection.get()

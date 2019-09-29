@@ -51,6 +51,7 @@ nextApp.prepare().then(() => {
 
   app.post("/joinRoom", async (req, res) => {
     const { roomCode, nickName } = req.body;
+    console.log("req: ", req.body);
     if (!roomCode || !nickName) {
       return res.json({
         success: false,
@@ -79,14 +80,18 @@ nextApp.prepare().then(() => {
     const { params } = req;
     const { roomCode } = params;
     const roomData = await db.getRoomData({ roomCode });
-    console.log("roomdata", roomData);
     res.json({ success: true, roomData });
   });
 
   app.post("/room/createAnswer", async (req, res) => {
-    console.log("retrieved");
-    // const { roomCode, nickName, questionIdx } = req.body;
-    // await db.createAnswer({ roomCode, nickName, questionIdx })
+    const { roomCode, nickName, questionIdx, value } = req.body;
+    const response = await db.createAnswer({
+      roomCode,
+      nickName,
+      questionIdx,
+      value
+    });
+    res.json(response);
   });
 
   app.get("*", (req, res) => {
