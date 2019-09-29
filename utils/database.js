@@ -147,6 +147,39 @@ const createDbConnection = fireStore => {
           });
         });
     },
+    chooseAnswer: async ({ answerIdx, questionIdx, roomCode, nickName }) => {
+      const roomRef = RoomsCollection.doc(roomCode);
+      return fireStore
+        .runTransaction(t => {
+          return t.get(roomRef).then(roomDoc => {
+            const currRoomData = roomDoc.data();
+
+            const newVoters = [
+              ...currRoomData.answers[questionIdx][answerIdx].voter,
+              nickName
+            ];
+
+            const newAnswers = { ...currRoomData.answers };
+
+            newAnswers[questionIdx][answerIdx].voter = newVoters;
+
+            t.update(roomRef, { answers: newAnswers });
+          });
+        })
+        .then(result => {
+          return Promise.resolve({
+            success: true,
+            message: `Success submitting answer`
+          });
+        })
+        .catch(err => {
+          console.log("err in transaction", err);
+          return Promise.resolve({
+            success: false,
+            message: `Failed submitting answer,`
+          });
+        });
+    },
     getAllTest: () => {
       // TestCollection.get()
       //   .then(snapshot => {

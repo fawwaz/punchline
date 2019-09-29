@@ -23,3 +23,11 @@ export const createAnswer = ({ roomCode, nickName, questionIdx, value }) =>
     questionIdx,
     value
   });
+
+export const chooseAnswer = ({ answerIdx, questionIdx, roomCode, nickName }) =>
+  request.post("/room/chooseAnswer", {
+    answerIdx,
+    questionIdx,
+    roomCode,
+    nickName
+  });

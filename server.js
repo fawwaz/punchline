@@ -25,9 +25,7 @@ const firestore = firebaseAdmin.firestore();
 
 const db = createDbConnection(firestore);
 
-io.on("connection", socket => {
-  configureSocket(socket, db);
-});
+configureSocket(io, db);
 
 nextApp.prepare().then(() => {
   app.use(bodyParser.json());
@@ -90,6 +88,17 @@ nextApp.prepare().then(() => {
       nickName,
       questionIdx,
       value
+    });
+    res.json(response);
+  });
+
+  app.post("/room/chooseAnswer", async (req, res) => {
+    const { answerIdx, questionIdx, roomCode, nickName } = req.body;
+    const response = await db.chooseAnswer({
+      answerIdx,
+      questionIdx,
+      roomCode,
+      nickName
     });
     res.json(response);
   });
