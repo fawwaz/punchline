@@ -13,6 +13,7 @@ const createDbConnection = fireStore => {
           players: [],
           questions: {},
           answers: {},
+          votes: {},
           questionIdx: 0
         };
         return RoomsCollection.doc(roomCode).set(initialRoomData);
@@ -79,6 +80,7 @@ const createDbConnection = fireStore => {
       const currRoomData = roomDocs.data();
       const nextQuestions = {};
       const nextAnswers = {};
+      const nextVotes = {};
       facts.forEach((fact, idx) => {
         nextQuestions[idx] = {
           ...fact,
@@ -91,13 +93,15 @@ const createDbConnection = fireStore => {
             voter: []
           }
         ];
+        nextVotes[idx] = [];
       });
       // avoid duplication
       if (Object.keys(currRoomData.questions).length === 0) {
         try {
           await roomRef.update({
             questions: nextQuestions,
-            answers: nextAnswers
+            answers: nextAnswers,
+            votes: nextVotes
           });
         } catch (e) {
           console.log("error pas update ", e);
@@ -163,7 +167,10 @@ const createDbConnection = fireStore => {
 
             newAnswers[questionIdx][answerIdx].voter = newVoters;
 
-            t.update(roomRef, { answers: newAnswers });
+            const newVotes = { ...currRoomData.votes };
+            newVotes[questionIdx] = [...newVotes[questionIdx], nickName];
+
+            t.update(roomRef, { answers: newAnswers, votes: newVotes });
           });
         })
         .then(result => {

@@ -155,7 +155,7 @@ class GameController extends Component {
             <input
               onChange={this.handleChange}
               type="text"
-              placeholder="Your custom answer"
+              placeholder="Your fake answer"
               value={this.state.answer}
             />
             <button onClick={this.handleSubmit}>Send</button>
@@ -166,7 +166,7 @@ class GameController extends Component {
         <hr />
         <h3>Choose the answer : </h3>
         <hr />
-        {answers[questionIdx].map((answer, idx) => (
+        {(answers[questionIdx] || []).map((answer, idx) => (
           <>
             <button key={idx} onClick={() => this.handleChooseAnswer(idx)}>
               {answer.value}

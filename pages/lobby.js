@@ -89,16 +89,37 @@ class LobbyScreen extends Component {
 
     return (
       <div>
-        Message from server: {message}
-        Room Code is : {roomCode} <br />
-        Players are:
-        <ul>
-          {players.map(player => (
-            <li key={player}>{player}</li>
-          ))}
-        </ul>
-        <button>Delete Lobby</button>
-        <button onClick={this.handleClickStartGame}>Start The Game !</button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            width: "100%"
+          }}
+        >
+          <div style={{ width: "300px" }}>
+            Room Code is : {roomCode} <br />
+            <hr />
+            {message}
+            Connected Players:
+            <ul>
+              {players.map(player => (
+                <li key={player}>{player}</li>
+              ))}
+            </ul>
+            <br />
+            <hr />
+            <button
+              onClick={this.handleClickStartGame}
+              disabled={players.length < 1}
+            >
+              Start The Game !
+            </button>
+            <br />
+            At least 4 people required to play the game.
+          </div>
+        </div>
       </div>
     );
   }

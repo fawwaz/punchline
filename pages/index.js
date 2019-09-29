@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { Component } from "react";
 import Router from "next/router";
 import Link from "next/link";
@@ -129,52 +130,46 @@ class ChatOne extends Component {
 
     return (
       <main>
-        {/* <div>
-          <Link href={'/'}>
-            <a>{'Chat One'}</a>
-          </Link>
-          <br />
-          <Link href={'/clone'}>
-            <a>{`Chat Two ${
-              this.state.newMessage > 0
-                ? `( ${this.state.newMessage} new message )`
-                : ''
-            }`}</a>
-          </Link>
-          <ul>
-            {this.state.messages.map(message => (
-              <li key={message.id}>{message.value}</li>
-            ))}
-          </ul>
-          <form onSubmit={e => this.handleClickJoin(e)}>
-            <input
-              onChange={this.handleChange}
-              type='text'
-              placeholder='Hello world!'
-              value={this.state.field}
-            />
-            <button>Send</button>
-          </form>
-        </div> */}
-        <Link href={"/lobby"}>
-          <a>Create Lobby</a>
-        </Link>
-        message from server :<pre>{this.state.message}</pre>
-        <form onSubmit={e => this.handleClickJoin(e)}>
-          <input
-            onChange={this.handleChangeNickName}
-            type="text"
-            placeholder="Enter your nick name"
-            value={this.state.nickName}
-          />
-          <input
-            onChange={this.handleChangeRoomCode}
-            type="text"
-            placeholder="Enter 4 digit Room Code!"
-            value={this.state.roomCode}
-          />
-          <button>Join Lobby</button>
-        </form>
+        <Head>
+          <script
+            src="https://www.reactriot.com/entries/149-cokroaminoto/vote.js"
+            type="text/javascript"
+          ></script>
+        </Head>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            width: "100%"
+          }}
+        >
+          <div style={{ height: 200, width: 200 }}>
+            <Link href={"/lobby"}>
+              <button>Create Lobby</button>
+            </Link>
+            <br />
+            <pre>{this.state.message}</pre>
+            <form onSubmit={e => this.handleClickJoin(e)}>
+              <input
+                onChange={this.handleChangeNickName}
+                type="text"
+                placeholder="Enter your nick name"
+                value={this.state.nickName}
+              />
+              <br />
+              <input
+                onChange={this.handleChangeRoomCode}
+                type="text"
+                placeholder="Enter 4 digit Room Code!"
+                value={this.state.roomCode}
+              />
+              <br />
+              <button>Join Lobby</button>
+            </form>
+          </div>
+        </div>
       </main>
     );
   }
